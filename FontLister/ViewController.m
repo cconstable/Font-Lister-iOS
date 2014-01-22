@@ -11,6 +11,9 @@
 
 @interface ViewController ()
 
+@property (strong, nonatomic) NSMutableArray *fontNames;
+@property (weak, nonatomic) IBOutlet UITableView *tableView;
+
 - (IBAction)findTypefacesPressed:(id)sender;
 
 @end
@@ -21,6 +24,8 @@
 {
     [super viewDidLoad];
     [self setupBackground];
+    
+    self.tableView.backgroundColor = [UIColor clearColor];
 }
 
 - (void)setupBackground
@@ -42,6 +47,40 @@
     [self.view.layer insertSublayer:gradientLayer atIndex:0];
 }
 
+#pragma mark - Table View Methods
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.fontNames.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSString *currentFont = [self.fontNames objectAtIndex:indexPath.row];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell"];
+    if (!cell) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
+                                      reuseIdentifier:@"Cell"];
+    }
+    
+    cell.textLabel.textColor = [UIColor whiteColor];
+    cell.textLabel.text = currentFont;
+    cell.textLabel.font = [UIFont fontWithName:currentFont size:17];
+    cell.backgroundColor = [UIColor clearColor];
+    
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
 #pragma mark - Actions
 
 - (IBAction)findTypefacesPressed:(id)sender {
@@ -51,7 +90,9 @@
     //
     
     NSUInteger totalNumberOfFonts = 0;
+    self.fontNames = [NSMutableArray array];
     OrderedDictionary *jsonDictMutable = [OrderedDictionary dictionary];
+    
     NSArray *fontFamilyNames = [UIFont familyNames];
     fontFamilyNames = [fontFamilyNames sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     for (NSString *fontFamily in fontFamilyNames) {
@@ -61,6 +102,7 @@
         fontNameList = [fontNameList sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
         for (NSString *fontName in fontNameList) {
             [fontNames addObject:fontName];
+            [self.fontNames addObject:fontName];
             totalNumberOfFonts++;
         }
         
@@ -112,6 +154,8 @@
                                               otherButtonTitles:nil];
         [alert show];
     }
+    
+    [self.tableView reloadData];
 }
 
 @end
